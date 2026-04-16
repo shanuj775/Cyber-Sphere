@@ -5,8 +5,12 @@ import { ShieldAlert, MapPin, Zap } from 'lucide-react';
 
 export function IndiaMapAnimation() {
   const [activeDots, setActiveDots] = useState<{ x: number, y: number, id: number }[]>([]);
+  const [nodeStatuses, setNodeStatuses] = useState<boolean[]>([]);
 
   useEffect(() => {
+    // Generate initial node statuses on the client to avoid hydration mismatch
+    setNodeStatuses([...Array(12)].map(() => Math.random() > 0.2));
+
     const interval = setInterval(() => {
       const newDot = {
         x: Math.random() * 80 + 10,
@@ -14,7 +18,11 @@ export function IndiaMapAnimation() {
         id: Date.now()
       };
       setActiveDots(prev => [...prev.slice(-4), newDot]);
+      
+      // Occasionally update node statuses for animation effect
+      setNodeStatuses([...Array(12)].map(() => Math.random() > 0.2));
     }, 2000);
+    
     return () => clearInterval(interval);
   }, []);
 
@@ -76,9 +84,19 @@ export function IndiaMapAnimation() {
           <span className="text-[10px] font-bold uppercase tracking-widest">Real-time Node Status</span>
         </div>
         <div className="mt-2 flex gap-1">
-          {[...Array(12)].map((_, i) => (
-            <div key={i} className={`h-3 w-1.5 rounded-sm ${Math.random() > 0.2 ? 'bg-primary/50' : 'bg-accent animate-pulse'}`}></div>
-          ))}
+          {nodeStatuses.length > 0 ? (
+            nodeStatuses.map((isSecure, i) => (
+              <div 
+                key={i} 
+                className={`h-3 w-1.5 rounded-sm transition-colors duration-500 ${isSecure ? 'bg-primary/50' : 'bg-accent animate-pulse'}`}
+              />
+            ))
+          ) : (
+            // Fallback empty bars during hydration to match server-side structure
+            [...Array(12)].map((_, i) => (
+              <div key={i} className="h-3 w-1.5 rounded-sm bg-primary/20" />
+            ))
+          )}
         </div>
       </div>
     </div>
