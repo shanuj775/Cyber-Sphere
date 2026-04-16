@@ -11,13 +11,12 @@ export function IndiaMapAnimation() {
 
   useEffect(() => {
     setIsMounted(true);
-    // Initialize node statuses safely on client
     setNodeStatuses([...Array(16)].map(() => Math.random() > 0.15));
 
     const interval = setInterval(() => {
       const types = ['THREAT', 'SECURE', 'DATA'];
       const newDot = {
-        x: Math.random() * 40 + 30, // Centered around the map path coordinates
+        x: Math.random() * 40 + 30,
         y: Math.random() * 60 + 20,
         id: Date.now(),
         type: types[Math.floor(Math.random() * types.length)]
@@ -40,7 +39,6 @@ export function IndiaMapAnimation() {
 
   return (
     <div className="relative w-full aspect-square max-w-[600px] mx-auto group perspective-1000">
-      {/* Background Glows */}
       <div className="absolute inset-0 bg-primary/10 rounded-full blur-[120px] opacity-40 group-hover:bg-primary/20 transition-all duration-1000"></div>
       
       <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-primary/20 stroke-[0.2] transition-transform duration-700 group-hover:scale-105">
@@ -58,7 +56,6 @@ export function IndiaMapAnimation() {
           </filter>
         </defs>
 
-        {/* Global Grid */}
         <g className="opacity-5 dark:opacity-10">
           {[...Array(11)].map((_, i) => (
             <line key={`v-${i}`} x1={i * 10} y1="0" x2={i * 10} y2="100" stroke="currentColor" strokeWidth="0.05" />
@@ -68,7 +65,6 @@ export function IndiaMapAnimation() {
           ))}
         </g>
 
-        {/* Realistic India Path (Stylized but Detailed) */}
         <path 
           d="M50,12 L53,16 L58,19 L63,22 L66,28 L71,33 L74,39 L77,46 L75,56 L70,66 L64,76 L57,86 L50,93 L43,86 L36,76 L30,66 L25,56 L23,46 L26,39 L29,33 L34,28 L37,22 L42,19 L47,16 Z" 
           fill="url(#mapGradient)"
@@ -76,7 +72,6 @@ export function IndiaMapAnimation() {
           filter="url(#glow)"
         />
         
-        {/* Core Mesh Connections */}
         <path 
           d="M50,15 L50,85 M30,45 L70,45 M35,30 L65,60 M65,30 L35,60" 
           stroke="hsl(var(--primary))" 
@@ -85,7 +80,6 @@ export function IndiaMapAnimation() {
           opacity="0.2" 
         />
 
-        {/* Scan Line Overlay */}
         <line 
           x1="0" 
           y1={scanLinePos} 
@@ -95,7 +89,6 @@ export function IndiaMapAnimation() {
           filter="url(#glow)"
         />
 
-        {/* Data Packets */}
         {activeDots.map((dot) => (
           <g key={dot.id} className="animate-in fade-in duration-1000">
             <circle 
@@ -114,7 +107,6 @@ export function IndiaMapAnimation() {
         ))}
       </svg>
 
-      {/* Analytics HUD */}
       <div className="absolute top-8 right-8 p-5 glass-morphism rounded-2xl shadow-xl transition-all group-hover:translate-x-2">
         <div className="flex items-center gap-2 mb-4">
           <Activity className="h-4 w-4 text-primary animate-pulse" />
@@ -137,7 +129,6 @@ export function IndiaMapAnimation() {
         </div>
       </div>
 
-      {/* Network Sync HUD */}
       <div className="absolute bottom-8 left-8 p-5 glass-morphism rounded-2xl shadow-xl transition-all group-hover:-translate-x-2">
         <div className="flex items-center gap-2 mb-4">
           <Globe className="h-4 w-4 text-primary" />

@@ -229,7 +229,7 @@ export default function Home() {
                 <Shield className="h-8 w-8 text-primary" />
                 <span className="text-2xl font-headline font-bold tracking-tight">Cyber-Sphere</span>
               </Link>
-              <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
+              <p className="text-sm text-muted-foreground max-sm leading-relaxed">
                 Empowering the global digital society with next-generation security intelligence. Committed to SDG-16 for a more just and secure future.
               </p>
             </div>
