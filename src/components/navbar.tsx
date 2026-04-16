@@ -2,7 +2,7 @@
 "use client"
 
 import Link from 'next/link';
-import { Shield, Globe, User, Menu, X, Sun, Moon, Cpu } from 'lucide-react';
+import { Shield, Globe, User, Menu, X, Sun, Moon, Cpu, LayoutDashboard, Settings, LogOut } from 'lucide-react';
 import { useLanguage } from './language-context';
 import { Button } from './ui/button';
 import {
@@ -10,11 +10,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
+import { useUser, useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
+  const { user } = useUser();
+  const auth = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
 
@@ -33,6 +40,10 @@ export function Navbar() {
     { href: '/dashboard', label: t('nav.dashboard') },
     { href: '/admin', label: t('nav.admin') },
   ];
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
   return (
     <nav className="fixed top-0 w-full z-[100] bg-background/80 backdrop-blur-lg border-b border-border h-16 flex items-center px-4 md:px-8">
@@ -79,18 +90,59 @@ export function Navbar() {
                   <Globe className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="glass-morphism">
                 <DropdownMenuItem onClick={() => setLanguage('en')}>English</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLanguage('hi')}>हिन्दी</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link href="/login">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 ml-2 rounded-full px-5 futuristic-glow">
-                <User className="mr-2 h-4 w-4" />
-                {t('nav.login')}
-              </Button>
-            </Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+                    <Avatar className="h-10 w-10 border border-primary/20">
+                      <AvatarImage src={`https://picsum.photos/seed/${user.uid}/100/100`} />
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {user.email?.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 glass-morphism">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-bold leading-none">Specialist</p>
+                      <p className="text-xs leading-none text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="cursor-pointer">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>{t('nav.dashboard')}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Profile Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-accent focus:text-accent cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Secure Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <Button size="sm" className="bg-primary hover:bg-primary/90 ml-2 rounded-full px-5 futuristic-glow">
+                  <User className="mr-2 h-4 w-4" />
+                  {t('nav.login')}
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -123,9 +175,13 @@ export function Navbar() {
               <Button variant={language === 'en' ? 'default' : 'outline'} size="sm" className="rounded-full" onClick={() => setLanguage('en')}>EN</Button>
               <Button variant={language === 'hi' ? 'default' : 'outline'} size="sm" className="rounded-full" onClick={() => setLanguage('hi')}>HI</Button>
             </div>
-            <Link href="/login">
-              <Button size="sm" className="rounded-full futuristic-glow" onClick={() => setIsOpen(false)}>{t('nav.login')}</Button>
-            </Link>
+            {user ? (
+              <Button variant="outline" size="sm" className="rounded-full" onClick={handleLogout}>Logout</Button>
+            ) : (
+              <Link href="/login">
+                <Button size="sm" className="rounded-full futuristic-glow" onClick={() => setIsOpen(false)}>{t('nav.login')}</Button>
+              </Link>
+            )}
           </div>
         </div>
       )}

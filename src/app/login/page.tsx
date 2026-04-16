@@ -2,8 +2,9 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,9 +13,11 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, Lock, Mail, Loader2, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function LoginPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -41,7 +44,20 @@ export default function LoginPage() {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Welcome back", description: "Successfully logged in." });
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Initialize UserProfile in Firestore
+        if (firestore) {
+          const profileData = {
+            id: userCredential.user.uid,
+            displayName: email.split('@')[0],
+            preferredLanguage: 'en',
+            createdAt: new Date().toISOString(),
+            lastActivityAt: new Date().toISOString()
+          };
+          setDocumentNonBlocking(doc(firestore, 'users', userCredential.user.uid), profileData, { merge: true });
+        }
+        
         toast({ title: "Account created", description: "Welcome to Cyber-Sphere." });
       }
     } catch (error: any) {

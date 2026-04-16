@@ -3,28 +3,46 @@
 
 import { useLanguage } from '@/components/language-context';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Shield, History, Star, ArrowUpRight, ShieldCheck, Newspaper, Loader2 } from 'lucide-react';
+import { Shield, History, Star, ArrowUpRight, ShieldCheck, Newspaper, Loader2, Link as LinkIcon, MessageSquare, Image as ImageIcon, FileSearch, QrCode } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, DocumentData } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 export default function UserDashboard() {
   const { t } = useLanguage();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
+  // Fetch unified recent scans (multiple collections)
   const linkScansQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(
-      collection(firestore, 'users', user.uid, 'linkScanResults'),
-      orderBy('scanTimestamp', 'desc'),
-      limit(5)
-    );
+    return query(collection(firestore, 'users', user.uid, 'linkScanResults'), orderBy('scanTimestamp', 'desc'), limit(3));
   }, [firestore, user]);
 
-  const { data: linkScans, isLoading: scansLoading } = useCollection<DocumentData>(linkScansQuery);
+  const messageScansQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'users', user.uid, 'messageScanResults'), orderBy('scanTimestamp', 'desc'), limit(3));
+  }, [firestore, user]);
+
+  const qrScansQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'users', user.uid, 'qrCodeScanResults'), orderBy('scanTimestamp', 'desc'), limit(3));
+  }, [firestore, user]);
+
+  const { data: linkScans, isLoading: linksLoading } = useCollection<DocumentData>(linkScansQuery);
+  const { data: messageScans, isLoading: messagesLoading } = useCollection<DocumentData>(messageScansQuery);
+  const { data: qrScans, isLoading: qrLoading } = useCollection<DocumentData>(qrScansQuery);
+
+  const isLoadingHistory = linksLoading || messagesLoading || qrLoading;
+
+  const allScans = [
+    ...(linkScans || []).map(s => ({ ...s, type: 'Link', icon: <LinkIcon className="h-4 w-4" /> })),
+    ...(messageScans || []).map(s => ({ ...s, type: 'Message', icon: <MessageSquare className="h-4 w-4" /> })),
+    ...(qrScans || []).map(s => ({ ...s, type: 'QR', icon: <QrCode className="h-4 w-4" /> }))
+  ].sort((a, b) => new Date(b.scanTimestamp).getTime() - new Date(a.scanTimestamp).getTime()).slice(0, 10);
 
   const news = [
     { title: "New Zero-Day vulnerability found in popular browser", source: "Security Labs", time: "2h ago" },
@@ -54,7 +72,7 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 space-y-12">
+    <div className="max-w-7xl mx-auto px-4 py-12 space-y-12 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
         <div>
           <h1 className="text-4xl font-headline font-bold">System Status: Optimal</h1>
@@ -62,13 +80,15 @@ export default function UserDashboard() {
         </div>
         <div className="bg-primary/10 border border-primary/20 p-6 rounded-2xl flex items-center gap-6">
           <div className="text-center">
-            <div className="text-2xl font-bold">{linkScans?.length || 0}</div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Recent Scans</div>
+            <div className="text-2xl font-bold">{allScans.length}</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Activity</div>
           </div>
           <div className="h-10 w-px bg-white/10"></div>
           <div className="text-center">
-            <div className="text-2xl font-bold">0</div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Threats Blocked</div>
+            <div className="text-2xl font-bold">
+              {allScans.filter(s => s.resultStatus !== 'safe').length}
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Threats Flagged</div>
           </div>
         </div>
       </div>
@@ -128,42 +148,48 @@ export default function UserDashboard() {
           </CardContent>
         </Card>
 
-        {/* Scan History */}
+        {/* Unified Scan History */}
         <Card className="lg:col-span-2 bg-card border-white/5">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5 text-blue-500" />
-              Recent Scan Activity
+              Unified Activity Stream
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {scansLoading ? (
+            {isLoadingHistory ? (
               <div className="flex py-10 justify-center">
                 <Loader2 className="animate-spin text-muted-foreground" />
               </div>
-            ) : linkScans && linkScans.length > 0 ? (
+            ) : allScans.length > 0 ? (
               <div className="space-y-4">
-                {linkScans.map((scan, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 bg-background/30 rounded-xl border border-white/5">
+                {allScans.map((scan, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 bg-background/30 rounded-xl border border-white/5 group hover:bg-background/50 transition-all">
                     <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-lg ${scan.resultStatus === 'safe' ? 'bg-green-500/10 text-green-500' : 'bg-accent/10 text-accent'}`}>
-                        <Shield className="h-4 w-4" />
+                      <div className={`p-2 rounded-lg ${scan.resultStatus === 'safe' || scan.resultStatus === 'clean' ? 'bg-green-500/10 text-green-500' : 'bg-accent/10 text-accent'}`}>
+                        {scan.icon}
                       </div>
                       <div>
-                        <div className="text-sm font-bold">Link Scan</div>
-                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">{scan.scannedUrl}</div>
+                        <div className="text-sm font-bold">{scan.type} Scan</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                          {scan.scannedUrl || scan.messageContentPreview || scan.scannedContent || 'Media Verification'}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className={`text-xs font-bold uppercase ${scan.resultStatus === 'safe' ? 'text-green-500' : 'text-accent'}`}>{scan.resultStatus}</div>
-                      <div className="text-[10px] text-muted-foreground">{new Date(scan.scanTimestamp).toLocaleDateString()}</div>
+                    <div className="flex items-center gap-4">
+                       <Badge variant={scan.resultStatus === 'safe' || scan.resultStatus === 'clean' ? 'default' : 'destructive'} className="h-6">
+                        {scan.resultStatus.toUpperCase()}
+                      </Badge>
+                      <div className="text-right hidden sm:block">
+                        <div className="text-[10px] text-muted-foreground">{new Date(scan.scanTimestamp).toLocaleDateString()}</div>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="py-12 text-center text-muted-foreground text-sm border-2 border-dashed border-white/5 rounded-xl">
-                No recent activity detected.
+                No recent activity detected in the mesh.
               </div>
             )}
           </CardContent>
