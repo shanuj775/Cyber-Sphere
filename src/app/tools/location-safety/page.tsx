@@ -42,7 +42,7 @@ export default function LocationSafetyPage() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 animate-in fade-in duration-1000">
       <div className="mb-12 text-center space-y-4">
-        <h1 className="text-5xl font-headline font-bold">Geospatial Risk Analysis</h1>
+        <h1 className="text-4xl md:text-5xl font-headline font-bold">Geospatial Risk Analysis</h1>
         <p className="text-muted-foreground text-lg">Global threat intelligence mapped to specific regional incident nodes.</p>
       </div>
 
@@ -62,7 +62,7 @@ export default function LocationSafetyPage() {
                 <Input 
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g., Gurgaon, India"
+                  placeholder="e.g., Delhi, India"
                   className="bg-secondary/30 border-white/10 h-14 pl-12 text-lg rounded-2xl"
                 />
               </div>
@@ -84,6 +84,13 @@ export default function LocationSafetyPage() {
                <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors duration-1000"></div>
                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]"></div>
                
+               {/* Geographic Map Backdrop */}
+               <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full fill-primary/5 stroke-primary/10 stroke-[0.2] opacity-40">
+                  <path d="M10,20 Q30,10 50,30 T90,20 V80 Q70,90 50,70 T10,80 Z" />
+                  <circle cx="50" cy="50" r="40" className="stroke-primary/5" />
+                  <path d="M0,50 L100,50 M50,0 L50,100" className="stroke-primary/5" />
+               </svg>
+               
                {/* Radar Circles */}
                <div className="absolute w-[300px] h-[300px] border border-primary/20 rounded-full animate-ping opacity-20"></div>
                <div className="absolute w-[450px] h-[450px] border border-primary/10 rounded-full animate-pulse opacity-10"></div>
@@ -97,7 +104,7 @@ export default function LocationSafetyPage() {
                    style={{ left: `${node.x}%`, top: `${node.y}%` }}
                  >
                    <div className="absolute -top-8 -left-4 bg-background/90 border border-white/10 px-2 py-1 rounded text-[8px] font-bold text-accent whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                     THREAT_DETECTED_0{i}
+                     THREAT_VEC_0{i}
                    </div>
                  </div>
                ))}
@@ -105,66 +112,66 @@ export default function LocationSafetyPage() {
                <div className="relative z-10 text-center space-y-2">
                  <ScanSearch className="h-16 w-16 text-primary mx-auto mb-4" />
                  <h4 className="text-xl font-headline font-bold uppercase tracking-widest">{location}</h4>
-                 <p className="text-[10px] font-mono opacity-60">SCANNING COORDINATES... OK</p>
+                 <p className="text-[10px] font-mono opacity-60">GEOLOCATION DATA SYNC... OK</p>
                </div>
                
                <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-background/80 p-2 rounded-lg border border-white/5">
                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                 <span className="text-[8px] font-bold uppercase tracking-widest">Live Feed Node-{location.substring(0,3).toUpperCase()}</span>
+                 <span className="text-[8px] font-bold uppercase tracking-widest">Live Feed-{location.substring(0,3).toUpperCase()}</span>
                </div>
             </Card>
 
             <div className="lg:col-span-7 space-y-8 animate-in slide-in-from-right duration-700">
               <Card className="bg-card border-white/5">
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <div>
                     <CardTitle className="text-2xl font-headline flex items-center gap-2">
                       <Globe className="h-6 w-6 text-primary" />
-                      Incident Dashboard
+                      Regional Intelligence
                     </CardTitle>
                     <Badge variant={result.safetyLevel === 'Critical' || result.safetyLevel === 'High Risk' ? 'destructive' : 'default'} className="mt-2 py-1 px-4 uppercase tracking-wider font-bold">
-                      {result.safetyLevel} Threat Level
+                      {result.safetyLevel} Risk
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="p-6 bg-secondary/20 rounded-2xl border border-white/5 group hover:border-primary/50 transition-all text-center">
-                      <div className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Phishing Velocity</div>
-                      <div className="text-2xl font-bold text-primary">{result.regionalStats.phishingRate}</div>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="p-4 bg-secondary/20 rounded-xl border border-white/5 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Phishing</div>
+                      <div className="text-xl font-bold text-primary">{result.regionalStats.phishingRate}</div>
                     </div>
-                    <div className="p-6 bg-secondary/20 rounded-2xl border border-white/5 group hover:border-accent/50 transition-all text-center">
-                      <div className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Network Intrusions</div>
-                      <div className="text-2xl font-bold text-accent">{result.regionalStats.networkAttacks}</div>
+                    <div className="p-4 bg-secondary/20 rounded-xl border border-white/5 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Attacks</div>
+                      <div className="text-xl font-bold text-accent">{result.regionalStats.networkAttacks}</div>
                     </div>
-                    <div className="p-6 bg-secondary/20 rounded-2xl border border-white/5 group hover:border-yellow-500/50 transition-all text-center">
-                      <div className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Data Exfiltration</div>
-                      <div className="text-2xl font-bold text-yellow-500">{result.regionalStats.dataBreaches}</div>
+                    <div className="p-4 bg-secondary/20 rounded-xl border border-white/5 text-center">
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Breaches</div>
+                      <div className="text-xl font-bold text-yellow-500">{result.regionalStats.dataBreaches}</div>
                     </div>
                   </div>
 
-                  <div className="p-6 bg-primary/5 rounded-2xl border border-primary/20 space-y-4">
+                  <div className="p-5 bg-primary/5 rounded-xl border border-primary/20 space-y-3">
                     <h4 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Info className="h-4 w-4" /> Operational Advisory
+                      <Info className="h-4 w-4" /> Expert Advisory
                     </h4>
-                    <p className="text-md text-muted-foreground leading-relaxed italic">"{result.advice}"</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed italic">"{result.advice}"</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-card border-white/5">
-                <CardHeader>
+                <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
                     <ShieldAlert className="h-4 w-4 text-accent" />
-                    Detected Threat Vectors
+                    Detected Vectors
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {result.topThreats.map((threat, i) => (
-                      <div key={i} className="flex items-center gap-4 p-4 bg-background/50 border border-white/5 rounded-2xl hover:bg-secondary/30 transition-all cursor-default group">
-                        <AlertCircle className="h-5 w-5 text-accent group-hover:scale-110 transition-transform" />
-                        <span className="text-sm font-bold tracking-tight">{threat}</span>
+                      <div key={i} className="flex items-center gap-3 p-3 bg-background/50 border border-white/5 rounded-xl hover:bg-secondary/30 transition-all cursor-default group">
+                        <AlertCircle className="h-4 w-4 text-accent group-hover:scale-110 transition-transform" />
+                        <span className="text-xs font-bold tracking-tight">{threat}</span>
                       </div>
                     ))}
                   </div>
