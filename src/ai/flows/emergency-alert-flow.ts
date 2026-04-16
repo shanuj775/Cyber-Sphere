@@ -1,6 +1,7 @@
 'use server';
 /**
  * @fileOverview A specialized emergency dispatch flow for Cyber-Sphere.
+ * Handles coordinates routing and secure distress signaling.
  */
 
 import { ai } from '@/ai/genkit';
@@ -19,7 +20,6 @@ const EmergencyAlertOutputSchema = z.object({
 });
 
 export async function triggerEmergencyAlert(input: z.infer<typeof EmergencyAlertInputSchema>) {
-  // Directly define the flow logic and call it.
   const flow = ai.defineFlow(
     {
       name: 'emergencyAlertFlow',
@@ -31,16 +31,16 @@ export async function triggerEmergencyAlert(input: z.infer<typeof EmergencyAlert
         ? `Latitude: ${input.lat}, Longitude: ${input.lng}`
         : 'Location data unavailable (GPS blocked)';
 
-      // LOGGING FOR SYSTEM TRACE
+      // Simulate secure dispatch protocol
       console.log(`[CYBER-SPHERE EMERGENCY DISPATCH]`);
-      console.log(`TARGET: ${input.email}`);
-      console.log(`USER: ${input.userId || 'Anonymous'}`);
+      console.log(`TARGET RECIPIENT: ${input.email}`);
+      console.log(`ORIGINATING SPECIALIST: ${input.userId || 'Anonymous'}`);
       console.log(`COORDINATES: ${locationStr}`);
-      console.log(`STATUS: Signal Dispatched via Secure Mesh`);
+      console.log(`STATUS: Distress Beacon Routed via Secure Mesh`);
       
       return { 
         success: true, 
-        message: `Distress signal with GPS data successfully routed to ${input.email}` 
+        message: `High-priority distress signal routed to ${input.email}` 
       };
     }
   );

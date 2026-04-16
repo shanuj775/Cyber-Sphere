@@ -11,6 +11,7 @@ export function IndiaMapAnimation() {
 
   useEffect(() => {
     setIsMounted(true);
+    // Initialize node statuses on the client only to avoid hydration mismatch
     setNodeStatuses([...Array(16)].map(() => Math.random() > 0.15));
 
     const interval = setInterval(() => {
@@ -65,6 +66,7 @@ export function IndiaMapAnimation() {
           ))}
         </g>
 
+        {/* Futuristic India Geometric Path */}
         <path 
           d="M50,12 L53,16 L58,19 L63,22 L66,28 L71,33 L74,39 L77,46 L75,56 L70,66 L64,76 L57,86 L50,93 L43,86 L36,76 L30,66 L25,56 L23,46 L26,39 L29,33 L34,28 L37,22 L42,19 L47,16 Z" 
           fill="url(#mapGradient)"
@@ -72,14 +74,7 @@ export function IndiaMapAnimation() {
           filter="url(#glow)"
         />
         
-        <path 
-          d="M50,15 L50,85 M30,45 L70,45 M35,30 L65,60 M65,30 L35,60" 
-          stroke="hsl(var(--primary))" 
-          strokeWidth="0.05" 
-          strokeDasharray="1 2" 
-          opacity="0.2" 
-        />
-
+        {/* Radar Scanning Line */}
         <line 
           x1="0" 
           y1={scanLinePos} 
@@ -107,6 +102,7 @@ export function IndiaMapAnimation() {
         ))}
       </svg>
 
+      {/* HUD Information Overlay */}
       <div className="absolute top-8 right-8 p-5 glass-morphism rounded-2xl shadow-xl transition-all group-hover:translate-x-2">
         <div className="flex items-center gap-2 mb-4">
           <Activity className="h-4 w-4 text-primary animate-pulse" />
@@ -147,7 +143,7 @@ export function IndiaMapAnimation() {
              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
              <span className="text-[8px] font-bold opacity-70">IDENTITY VERIFIED</span>
           </div>
-          <span className="text-[8px] font-mono opacity-40">NODE-CS-{activeDots.length.toString().padStart(2, '0')}</span>
+          <span className="text-[8px] font-mono opacity-40">NODE-CS-{activeDots.length}</span>
         </div>
       </div>
     </div>

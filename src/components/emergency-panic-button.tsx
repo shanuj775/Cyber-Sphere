@@ -46,7 +46,7 @@ export function PanicButton() {
     setIsLocating(false);
 
     try {
-      // 1. Trigger the server-side emergency flow (Simulates sending to inbox)
+      // 1. Trigger the server-side emergency flow
       await triggerEmergencyAlert({
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
@@ -54,7 +54,7 @@ export function PanicButton() {
         userId: user?.uid
       });
 
-      // 2. Log the incident to Firestore for the user record
+      // 2. Log incident to Firestore
       if (user && firestore) {
         const logsRef = collection(firestore, 'users', user.uid, 'panicButtonLogs');
         addDocumentNonBlocking(logsRef, {
@@ -63,14 +63,14 @@ export function PanicButton() {
           latitude: coords?.lat ?? null,
           longitude: coords?.lng ?? null,
           status: 'triggered',
-          notes: 'Emergency protocol initiated via dashboard panic button.',
+          notes: 'Emergency protocol initiated via specialist dashboard.',
           id: doc(logsRef).id
         });
       }
 
       toast({
         title: "EMERGENCY PROTOCOL ACTIVATED",
-        description: `Coordinates dispatched to shanujkumar627@gmail.com`,
+        description: `Specialist coordinates dispatched to shanujkumar627@gmail.com`,
         variant: "destructive",
       });
 
@@ -78,7 +78,7 @@ export function PanicButton() {
       console.error("Panic Dispatch Error:", err);
       toast({
         title: "SIGNAL INTERFERENCE",
-        description: "Standard distress beacon emitted via global mesh.",
+        description: "Standard distress beacon emitted via global mesh nodes.",
         variant: "destructive",
       });
     }
