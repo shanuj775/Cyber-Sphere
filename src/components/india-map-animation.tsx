@@ -22,13 +22,13 @@ export function IndiaMapAnimation() {
         id: Date.now(),
         type: types[Math.floor(Math.random() * types.length)]
       };
-      setActiveDots(prev => [...prev.slice(-8), newDot]);
+      setActiveDots(prev => [...prev.slice(-6), newDot]);
       setNodeStatuses([...Array(16)].map(() => Math.random() > 0.15));
-    }, 1200);
+    }, 1500);
 
     const scanInterval = setInterval(() => {
-      setScanLinePos(prev => (prev + 0.5) % 100);
-    }, 40);
+      setScanLinePos(prev => (prev + 0.4) % 100);
+    }, 50);
     
     return () => {
       clearInterval(interval);
@@ -40,17 +40,17 @@ export function IndiaMapAnimation() {
 
   return (
     <div className="relative w-full aspect-square max-w-[600px] mx-auto group perspective-1000">
-      {/* Dynamic Glow Layers */}
-      <div className="absolute inset-0 bg-primary/5 rounded-full blur-[100px] opacity-30 group-hover:bg-primary/15 transition-all duration-1000"></div>
+      {/* Background Glows */}
+      <div className="absolute inset-0 bg-primary/10 rounded-full blur-[120px] opacity-40 group-hover:bg-primary/20 transition-all duration-1000"></div>
       
-      <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-primary/20 stroke-[0.3] map-glow transition-transform duration-700 group-hover:scale-105">
+      <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-primary/20 stroke-[0.2] transition-transform duration-700 group-hover:scale-105">
         <defs>
           <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
             <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
           </linearGradient>
           <filter id="glow">
-            <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="1" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -58,104 +58,105 @@ export function IndiaMapAnimation() {
           </filter>
         </defs>
 
-        {/* Geographic Grid Background */}
-        <g className="opacity-10">
+        {/* Global Grid */}
+        <g className="opacity-5 dark:opacity-10">
           {[...Array(11)].map((_, i) => (
-            <line key={`v-${i}`} x1={i * 10} y1="0" x2={i * 10} y2="100" stroke="currentColor" strokeWidth="0.1" />
+            <line key={`v-${i}`} x1={i * 10} y1="0" x2={i * 10} y2="100" stroke="currentColor" strokeWidth="0.05" />
           ))}
           {[...Array(11)].map((_, i) => (
-            <line key={`h-${i}`} x1="0" y1={i * 10} x2="100" y2={i * 10} stroke="currentColor" strokeWidth="0.1" />
+            <line key={`h-${i}`} x1="0" y1={i * 10} x2="100" y2={i * 10} stroke="currentColor" strokeWidth="0.05" />
           ))}
         </g>
 
-        {/* Futuristic Stylized India Map Path */}
+        {/* Realistic India Path (Stylized but Detailed) */}
         <path 
-          d="M50,10 L55,15 L60,18 L65,22 L68,28 L72,32 L75,38 L78,45 L76,55 L72,65 L65,75 L58,85 L50,92 L42,85 L35,75 L28,65 L24,55 L22,45 L25,38 L28,32 L32,28 L35,22 L40,18 L45,15 Z" 
+          d="M50,12 L53,16 L58,19 L63,22 L66,28 L71,33 L74,39 L77,46 L75,56 L70,66 L64,76 L57,86 L50,93 L43,86 L36,76 L30,66 L25,56 L23,46 L26,39 L29,33 L34,28 L37,22 L42,19 L47,16 Z" 
           fill="url(#mapGradient)"
-          className="stroke-primary/60 stroke-[0.8]"
+          className="stroke-primary/50 stroke-[0.5]"
           filter="url(#glow)"
         />
         
-        {/* Internal Details / Nodes connections */}
+        {/* Core Mesh Connections */}
         <path 
           d="M50,15 L50,85 M30,45 L70,45 M35,30 L65,60 M65,30 L35,60" 
           stroke="hsl(var(--primary))" 
-          strokeWidth="0.1" 
+          strokeWidth="0.05" 
           strokeDasharray="1 2" 
-          opacity="0.3" 
+          opacity="0.2" 
         />
 
-        {/* Scan Line */}
+        {/* Scan Line Overlay */}
         <line 
           x1="0" 
           y1={scanLinePos} 
           x2="100" 
           y2={scanLinePos} 
-          className="stroke-primary/50 stroke-[0.5] opacity-60" 
+          className="stroke-primary/40 stroke-[0.4] opacity-50" 
           filter="url(#glow)"
         />
 
-        {/* Data Packet Dots */}
+        {/* Data Packets */}
         {activeDots.map((dot) => (
           <g key={dot.id} className="animate-in fade-in duration-1000">
             <circle 
               cx={dot.x} 
               cy={dot.y} 
-              r={dot.type === 'THREAT' ? '1.5' : '1'} 
-              className={`${dot.type === 'THREAT' ? 'fill-accent animate-ping' : 'fill-primary'} opacity-50`} 
+              r={dot.type === 'THREAT' ? '1.2' : '0.8'} 
+              className={`${dot.type === 'THREAT' ? 'fill-accent animate-ping' : 'fill-primary'} opacity-40`} 
             />
             <circle 
               cx={dot.x} 
               cy={dot.y} 
-              r="0.5" 
+              r="0.4" 
               className={dot.type === 'THREAT' ? 'fill-accent' : 'fill-primary'} 
             />
           </g>
         ))}
       </svg>
 
-      {/* HUD Overlays */}
-      <div className="absolute top-8 right-8 p-4 bg-background/80 border border-primary/20 rounded-2xl backdrop-blur-lg shadow-2xl scale-90 md:scale-100 transition-all group-hover:border-primary/50">
-        <div className="flex items-center gap-2 mb-3">
+      {/* Analytics HUD */}
+      <div className="absolute top-8 right-8 p-5 glass-morphism rounded-2xl shadow-xl transition-all group-hover:translate-x-2">
+        <div className="flex items-center gap-2 mb-4">
           <Activity className="h-4 w-4 text-primary animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Regional Health Telemetry</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Node Telemetry</span>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {[
-            { city: 'DEL', status: 'STABLE', val: '0.02ms' },
-            { city: 'MUM', status: 'ALERT', color: 'text-accent', val: '4.8s' },
-            { city: 'BLR', status: 'STABLE', val: '0.01ms' },
+            { city: 'DEL', val: '0.02ms', state: 'OK' },
+            { city: 'MUM', val: '4.8s', state: 'ATTACK', alert: true },
+            { city: 'BLR', val: '0.01ms', state: 'OK' },
           ].map((item, i) => (
-            <div key={i} className="flex justify-between items-center gap-6 border-b border-white/5 pb-1 last:border-0">
-              <span className="text-[9px] font-mono opacity-60">{item.city}</span>
-              <div className="flex items-center gap-2">
-                <span className={`text-[8px] font-bold font-mono ${item.color || 'text-green-500'}`}>{item.status}</span>
-                <span className="text-[7px] font-mono opacity-40">{item.val}</span>
+            <div key={i} className="flex justify-between items-center gap-8 border-b border-border/10 pb-2 last:border-0">
+              <span className="text-[9px] font-mono font-bold">{item.city}</span>
+              <div className="flex items-center gap-3">
+                <span className={`text-[8px] font-bold ${item.alert ? 'text-accent animate-pulse' : 'text-green-500'}`}>{item.state}</span>
+                <span className="text-[7px] font-mono opacity-50">{item.val}</span>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-8 p-4 bg-background/90 border border-primary/30 rounded-2xl backdrop-blur-lg shadow-2xl group-hover:border-primary transition-all scale-90 md:scale-100">
-        <div className="flex items-center gap-2 mb-3">
+      {/* Network Sync HUD */}
+      <div className="absolute bottom-8 left-8 p-5 glass-morphism rounded-2xl shadow-xl transition-all group-hover:-translate-x-2">
+        <div className="flex items-center gap-2 mb-4">
           <Globe className="h-4 w-4 text-primary" />
-          <span className="text-[10px] font-bold uppercase tracking-widest">Mesh Network Sync</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest">Global Sync</span>
         </div>
-        <div className="grid grid-cols-8 gap-1.5">
+        <div className="grid grid-cols-8 gap-1">
           {nodeStatuses.map((isSecure, i) => (
             <div 
               key={i} 
-              className={`h-4 w-2 rounded-sm transition-all duration-700 ${isSecure ? 'bg-primary/40' : 'bg-accent animate-pulse'}`}
+              className={`h-4 w-1.5 rounded-sm transition-all duration-700 ${isSecure ? 'bg-primary/40' : 'bg-accent animate-pulse'}`}
             />
           ))}
         </div>
-        <div className="mt-3 flex justify-between items-center">
-          <div className="flex items-center gap-1.5">
+        <div className="mt-4 flex justify-between items-center pt-3 border-t border-border/10">
+          <div className="flex items-center gap-2">
              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-             <span className="text-[8px] font-bold opacity-70 uppercase tracking-tighter">Identity Verified</span>
+             <span className="text-[8px] font-bold opacity-70">IDENTITY VERIFIED</span>
           </div>
-          <span className="text-[8px] font-mono opacity-50">NODE-CS-{activeDots.length.toString().padStart(2, '0')}</span>
+          <span className="text-[8px] font-mono opacity-40">NODE-CS-{activeDots.length.toString().padStart(2, '0')}</span>
         </div>
       </div>
     </div>
