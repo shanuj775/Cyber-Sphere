@@ -7,10 +7,16 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { detectFakeMessage, DetectFakeMessageOutput } from '@/ai/flows/fake-message-detector';
-import { Search, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function FakeMessagePage() {
   const { t } = useLanguage();
+  const { user } = useUser();
+  const { firestore } = useFirestore();
+  
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DetectFakeMessageOutput | null>(null);
@@ -21,6 +27,19 @@ export default function FakeMessagePage() {
     try {
       const output = await detectFakeMessage({ message });
       setResult(output);
+
+      if (user && firestore) {
+        const resultsRef = collection(firestore, 'users', user.uid, 'messageScanResults');
+        addDocumentNonBlocking(resultsRef, {
+          userId: user.uid,
+          messageContentPreview: message.substring(0, 100),
+          resultStatus: output.isSuspicious ? 'phishing-detected' : 'safe',
+          threatLevel: output.isSuspicious ? 'high' : 'low',
+          details: output.reasoning,
+          scanTimestamp: new Date().toISOString(),
+          id: doc(resultsRef).id
+        });
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -55,6 +74,7 @@ export default function FakeMessagePage() {
             >
               {loading ? "Analyzing Neural Patterns..." : "Execute Detection Scan"}
             </Button>
+            {!user && <p className="text-[10px] text-muted-foreground uppercase tracking-widest text-center">Login to save scan results</p>}
           </CardContent>
         </Card>
 

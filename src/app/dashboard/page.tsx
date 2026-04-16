@@ -2,23 +2,55 @@
 
 import { useLanguage } from '@/components/language-context';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Shield, Bell, History, Star, ArrowUpRight, ShieldCheck, Newspaper } from 'lucide-react';
+import { Shield, History, Star, ArrowUpRight, ShieldCheck, Newspaper, Loader2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit, DocumentData } from 'firebase/firestore';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function UserDashboard() {
   const { t } = useLanguage();
+  const { user, isUserLoading } = useUser();
+  const { firestore } = useFirestore();
 
-  const scanHistory = [
-    { type: 'Link Scan', target: 'http://bit.ly/secure-node', status: 'SAFE', date: '2024-05-20' },
-    { type: 'Message Detection', target: 'Email from Finance', status: 'SECURE', date: '2024-05-19' },
-    { type: 'Port Scan', target: '192.168.1.1', status: 'WARNING', date: '2024-05-18' },
-  ];
+  const linkScansQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'users', user.uid, 'linkScanResults'),
+      orderBy('scanTimestamp', 'desc'),
+      limit(5)
+    );
+  }, [firestore, user]);
+
+  const { data: linkScans, isLoading: scansLoading } = useCollection<DocumentData>(linkScansQuery);
 
   const news = [
     { title: "New Zero-Day vulnerability found in popular browser", source: "Security Labs", time: "2h ago" },
     { title: "Phishing attacks increase by 40% in South Asia region", source: "Cyber Threat Intel", time: "5h ago" },
     { title: "AI-powered firewalls are the new standard", source: "Tech Weekly", time: "1d ago" },
   ];
+
+  if (isUserLoading) {
+    return (
+      <div className="flex h-[70vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center space-y-6">
+        <Shield className="h-16 w-16 text-muted-foreground mx-auto opacity-20" />
+        <h1 className="text-3xl font-headline font-bold">Authentication Required</h1>
+        <p className="text-muted-foreground">Please sign in to view your security analytics and history.</p>
+        <Link href="/login">
+          <Button size="lg" className="futuristic-glow">Sign In to Dashboard</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-12">
@@ -29,13 +61,13 @@ export default function UserDashboard() {
         </div>
         <div className="bg-primary/10 border border-primary/20 p-6 rounded-2xl flex items-center gap-6">
           <div className="text-center">
-            <div className="text-2xl font-bold">14</div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Scans Done</div>
+            <div className="text-2xl font-bold">{linkScans?.length || 0}</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Recent Scans</div>
           </div>
           <div className="h-10 w-px bg-white/10"></div>
           <div className="text-center">
             <div className="text-2xl font-bold">0</div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Threats Found</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Threats Blocked</div>
           </div>
         </div>
       </div>
@@ -102,28 +134,37 @@ export default function UserDashboard() {
               <History className="h-5 w-5 text-blue-500" />
               Recent Scan Activity
             </CardTitle>
-            <Button variant="link" className="text-primary h-auto p-0">View All</Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {scanHistory.map((scan, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-background/30 rounded-xl border border-white/5">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-lg ${scan.status === 'SAFE' ? 'bg-green-500/10 text-green-500' : 'bg-accent/10 text-accent'}`}>
-                      <Shield className="h-4 w-4" />
+            {scansLoading ? (
+              <div className="flex py-10 justify-center">
+                <Loader2 className="animate-spin text-muted-foreground" />
+              </div>
+            ) : linkScans && linkScans.length > 0 ? (
+              <div className="space-y-4">
+                {linkScans.map((scan, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 bg-background/30 rounded-xl border border-white/5">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-2 rounded-lg ${scan.resultStatus === 'safe' ? 'bg-green-500/10 text-green-500' : 'bg-accent/10 text-accent'}`}>
+                        <Shield className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold">Link Scan</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">{scan.scannedUrl}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-sm font-bold">{scan.type}</div>
-                      <div className="text-xs text-muted-foreground truncate max-w-[200px]">{scan.target}</div>
+                    <div className="text-right">
+                      <div className={`text-xs font-bold uppercase ${scan.resultStatus === 'safe' ? 'text-green-500' : 'text-accent'}`}>{scan.resultStatus}</div>
+                      <div className="text-[10px] text-muted-foreground">{new Date(scan.scanTimestamp).toLocaleDateString()}</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className={`text-xs font-bold ${scan.status === 'SAFE' ? 'text-green-500' : 'text-accent'}`}>{scan.status}</div>
-                    <div className="text-[10px] text-muted-foreground">{scan.date}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center text-muted-foreground text-sm border-2 border-dashed border-white/5 rounded-xl">
+                No recent activity detected.
+              </div>
+            )}
           </CardContent>
         </Card>
 

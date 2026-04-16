@@ -9,9 +9,15 @@ import { Badge } from '@/components/ui/badge';
 import { scanLink, LinkScannerOutput } from '@/ai/flows/link-scanner-flow';
 import { Globe, AlertTriangle, ShieldCheck, Search, ArrowRight, Activity } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function LinkScannerPage() {
   const { t } = useLanguage();
+  const { user } = useUser();
+  const { firestore } = useFirestore();
+  
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<LinkScannerOutput | null>(null);
@@ -23,6 +29,20 @@ export default function LinkScannerPage() {
     try {
       const output = await scanLink({ url });
       setResult(output);
+
+      // Save to database if user is logged in
+      if (user && firestore) {
+        const scanResultsRef = collection(firestore, 'users', user.uid, 'linkScanResults');
+        addDocumentNonBlocking(scanResultsRef, {
+          userId: user.uid,
+          scannedUrl: url,
+          resultStatus: output.isSafe ? 'safe' : 'malicious',
+          threatLevel: output.riskScore > 75 ? 'critical' : output.riskScore > 40 ? 'medium' : 'low',
+          details: output.details,
+          scanTimestamp: new Date().toISOString(),
+          id: doc(scanResultsRef).id
+        });
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -65,6 +85,7 @@ export default function LinkScannerPage() {
                 {loading ? <Search className="animate-spin" /> : "Scan Link"}
               </Button>
             </div>
+            {!user && <p className="text-[10px] text-muted-foreground uppercase tracking-widest text-center">Login to save scan history</p>}
           </CardContent>
         </Card>
 
@@ -107,16 +128,6 @@ export default function LinkScannerPage() {
                   <p className="text-sm text-muted-foreground leading-relaxed">{result.recommendation}</p>
                 </div>
               </div>
-
-              {result.threats.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {result.threats.map((threat, i) => (
-                    <Badge key={i} variant="outline" className="border-accent/50 text-accent bg-accent/5">
-                      {threat}
-                    </Badge>
-                  ))}
-                </div>
-              )}
             </CardContent>
           </Card>
         )}
