@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -15,7 +16,7 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 export default function FakeMessagePage() {
   const { t } = useLanguage();
   const { user } = useUser();
-  const { firestore } = useFirestore();
+  const firestore = useFirestore();
   
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);

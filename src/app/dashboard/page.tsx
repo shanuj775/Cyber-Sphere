@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useLanguage } from '@/components/language-context';
@@ -12,7 +13,7 @@ import Link from 'next/link';
 export default function UserDashboard() {
   const { t } = useLanguage();
   const { user, isUserLoading } = useUser();
-  const { firestore } = useFirestore();
+  const firestore = useFirestore();
 
   const linkScansQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;

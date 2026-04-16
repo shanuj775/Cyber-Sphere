@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -16,7 +17,7 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 export default function LinkScannerPage() {
   const { t } = useLanguage();
   const { user } = useUser();
-  const { firestore } = useFirestore();
+  const firestore = useFirestore();
   
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
