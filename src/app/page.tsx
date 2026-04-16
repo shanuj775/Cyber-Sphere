@@ -57,7 +57,7 @@ export default function Home() {
     <div className="flex flex-col gap-0 overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center py-20 bg-[radial-gradient(circle_at_top_right,rgba(30,86,153,0.08),transparent)]">
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center w-full">
           <div className="space-y-8 animate-in slide-in-from-left duration-1000">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest">
               <Activity className="h-3 w-3 animate-pulse" />
@@ -72,13 +72,13 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/tools">
-                <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary hover:bg-primary/90 futuristic-glow rounded-full">
+                <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary hover:bg-primary/90 futuristic-glow rounded-full w-full sm:w-auto">
                   Deploy Suite
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/dashboard">
-                <Button variant="outline" size="lg" className="h-14 px-10 text-lg font-bold border-border hover:bg-secondary rounded-full">
+                <Button variant="outline" size="lg" className="h-14 px-10 text-lg font-bold border-border hover:bg-secondary rounded-full w-full sm:w-auto">
                   Access Node
                 </Button>
               </Link>

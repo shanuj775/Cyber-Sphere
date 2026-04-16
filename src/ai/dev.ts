@@ -9,3 +9,5 @@ import '@/ai/flows/port-scanner-flow.ts';
 import '@/ai/flows/malware-scanner-flow.ts';
 import '@/ai/flows/location-safety-flow.ts';
 import '@/ai/flows/qr-scanner-flow.ts';
+import '@/ai/flows/emergency-alert-flow.ts';
+

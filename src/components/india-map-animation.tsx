@@ -11,13 +11,13 @@ export function IndiaMapAnimation() {
 
   useEffect(() => {
     setIsMounted(true);
-    // Initialize node statuses
+    // Initialize node statuses safely on client
     setNodeStatuses([...Array(16)].map(() => Math.random() > 0.15));
 
     const interval = setInterval(() => {
       const types = ['THREAT', 'SECURE', 'DATA'];
       const newDot = {
-        x: Math.random() * 40 + 30, // Centered around the map
+        x: Math.random() * 40 + 30, // Centered around the map path coordinates
         y: Math.random() * 60 + 20,
         id: Date.now(),
         type: types[Math.floor(Math.random() * types.length)]
