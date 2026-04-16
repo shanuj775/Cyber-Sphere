@@ -1,4 +1,3 @@
-
 "use client"
 
 import { IndiaMapAnimation } from '@/components/india-map-animation';
